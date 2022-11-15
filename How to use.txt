@@ -1,0 +1,9 @@
+hey carlos this is the fmcsa scrapper and this is how to use it.
+
+1 - you need to run the chromedriver and it needs to stay up in the background
+2 - you need to tell the scrapper how many pages to scrape 
+you will find code line 14 like this 
+pagestoscrape = 0
+you just change the 0 to the number of pages you want to scrape 
+3- run the scrapper and wait for it 
+4- once it's done you will fina a csv file calle Data_output.csv in the scrapper folder
