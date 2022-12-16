@@ -19,7 +19,7 @@ lntxt = 'a'
 pages = 999999999999999
 schema = ['USDOT Number', 'Prefix', 'Docket Number', 'Legal Name', 'DBA Name', 'City', 'State', 'Zip code',
           'Fax number', 'Business Address', 'Business Telephone and Fax'
-    , 'Mail Address', 'Mail Telephone and Fax', 'Undeliverable Mail',
+    , 'Mail Address', 'Mail Telephone and Fax', 'Undeliverable Mail','Common Authority Status', 'contract Authority Status', 'broker Authority Status','common Application Pending','contract Application Pending','broker Application Pending',
           'Type', 'Insurance Carrier', 'Policy/Surety', 'Posted Date', 'Coverage From', 'Coverage to', 'Effective Date',
           'Cancellation Date',
           'Type', 'Insurance Carrier', 'Policy/Surety', 'Posted Date', 'Coverage From', 'Coverage to', 'Effective Date',
@@ -72,6 +72,8 @@ while (1):
             #     datalist.append(tempdatalist)
             for element in rowprospects:
                 datalist.append(element.text)
+            datalist.append('')
+
                 # print('oneprint')
             htmls = driver.find_element(By.XPATH,
                                         '/html/body/font/table[2]/tbody/tr[' + str(r) + ']/td[8]/center/font/form')
@@ -80,11 +82,12 @@ while (1):
             try:
                 elem = driver.find_element(By.XPATH, '/html/body/font/table[4]/tbody/tr/td/font/b')
                 phonetable = driver.find_element(By.XPATH, '/html/body/font/table[6]')
+                activeinsurancetavle = driver.find_element(By.XPATH,'/html/body/font/table[7]')
                 # print('tableeee6')
             except NoSuchElementException:
                 phonetable = driver.find_element(By.XPATH, '/html/body/font/table[5]')
                 # print('tableeee5')
-
+                activeinsurancetavle = driver.find_element(By.XPATH,'/html/body/font/table[6]')
             # def check_exists_by_xpath():
             #     try:
             #         driver.find_element(By.LINK_TEXT, 'This entity has a pending insurance cancellation.')
@@ -98,7 +101,10 @@ while (1):
             #     phonetable = driver.find_element(By.XPATH, '/html/body/font/table[5]')
             #     print('tableeee5')
             rowphone = phonetable.find_elements(By.CSS_SELECTOR, 'td')
+            rowactive = activeinsurancetavle.find_elements(By.CSS_SELECTOR,'td')
             for element in rowphone:
+                datalist.append(element.text)
+            for element in rowactive:
                 datalist.append(element.text)
             insactv = driver.find_element(By.XPATH, '/html/body/font/center[1]/table/tbody/tr/td[1]/form')
             insactv.click()
@@ -109,6 +115,7 @@ while (1):
                 datalist.append(element.text)
             listdatalist.append(datalist)
             print('one prospect scrapped completley!')
+            print(listdatalist)
             datalist = []
             driver.back()
             # print('back to html')
@@ -172,11 +179,29 @@ while (1):
             onepage = 1
             break
 if onepage < 1:
-    with open("Data_output.csv", "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow([g for g in schema])
-        writer.writerows(listdatalist)
-
+                tot = 0
+                for lst in listdatalist:
+                    lns = len(listdatalist[tot])
+                    if lns > 9:
+                        adrs = listdatalist[tot][9]
+                        fax = listdatalist[tot][10]
+                        faxlns = len(listdatalist[tot][10])
+                        adrslns = length = len(adrs)
+                        zipcode = adrs[adrslns - 5:]
+                        listdatalist[tot][7] = zipcode
+                        if faxlns > 15:
+                            phoneandfax = listdatalist[tot][10]
+                            adrslns = length = len(adrs)
+                            faxnum = fax[faxlns - 15:]
+                            listdatalist[tot][8] = faxnum
+                        tot = tot + 1
+                    else:
+                        tot = tot + 1
+                with open("Data_output.csv", "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([g for g in schema])
+                    writer.writerows(listdatalist)
+                    onepage = 1
 # for prospect in prospects:
 #     # print(prospect.text)
 #     print('done')
