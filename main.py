@@ -18,8 +18,9 @@ pagestoscrape = 0
 lntxt = 'a'
 pages = 999999999999999
 schema = ['USDOT Number', 'Prefix', 'Docket Number', 'Legal Name', 'DBA Name', 'City', 'State', 'Zip code',
-          'Fax number', 'Business Address', 'Business Telephone and Fax'
+          'Fax number', 'Business Address', 'Business Telephone'
     , 'Mail Address', 'Mail Telephone and Fax', 'Undeliverable Mail','Common Authority Status', 'contract Authority Status', 'broker Authority Status','common Application Pending','contract Application Pending','broker Application Pending',
+          'Property','Passenger','Household Goods','Private','Enterprise',
           'Type', 'Insurance Carrier', 'Policy/Surety', 'Posted Date', 'Coverage From', 'Coverage to', 'Effective Date',
           'Cancellation Date',
           'Type', 'Insurance Carrier', 'Policy/Surety', 'Posted Date', 'Coverage From', 'Coverage to', 'Effective Date',
@@ -83,11 +84,13 @@ while (1):
                 elem = driver.find_element(By.XPATH, '/html/body/font/table[4]/tbody/tr/td/font/b')
                 phonetable = driver.find_element(By.XPATH, '/html/body/font/table[6]')
                 activeinsurancetavle = driver.find_element(By.XPATH,'/html/body/font/table[7]')
+                propertytable = driver.find_element(By.XPATH,'/html/body/font/table[8]')
                 # print('tableeee6')
             except NoSuchElementException:
                 phonetable = driver.find_element(By.XPATH, '/html/body/font/table[5]')
                 # print('tableeee5')
                 activeinsurancetavle = driver.find_element(By.XPATH,'/html/body/font/table[6]')
+                propertytable = driver.find_element(By.XPATH,'/html/body/font/table[7]')
             # def check_exists_by_xpath():
             #     try:
             #         driver.find_element(By.LINK_TEXT, 'This entity has a pending insurance cancellation.')
@@ -102,9 +105,12 @@ while (1):
             #     print('tableeee5')
             rowphone = phonetable.find_elements(By.CSS_SELECTOR, 'td')
             rowactive = activeinsurancetavle.find_elements(By.CSS_SELECTOR,'td')
+            rowprop = propertytable.find_elements(By.CSS_SELECTOR,'td')
             for element in rowphone:
                 datalist.append(element.text)
             for element in rowactive:
+                datalist.append(element.text)
+            for element in rowprop:
                 datalist.append(element.text)
             insactv = driver.find_element(By.XPATH, '/html/body/font/center[1]/table/tbody/tr/td[1]/form')
             insactv.click()
@@ -159,16 +165,20 @@ while (1):
             lns = len(listdatalist[tot])
             if lns > 9:
                 adrs = listdatalist[tot][9]
+                adrslns = length = len(adrs)
+                adrsremove = len(listdatalist[tot][5]) + len(listdatalist[tot][6]) +7
+                f = adrslns - adrsremove
+                listdatalist[tot][9] = adrs[:f]
                 fax = listdatalist[tot][10]
                 faxlns = len(listdatalist[tot][10])
-                adrslns = length = len(adrs)
                 zipcode = adrs[adrslns - 5:]
                 listdatalist[tot][7] = zipcode
                 if faxlns > 15:
                     phoneandfax = listdatalist[tot][10]
+                    listdatalist[tot][10] = phoneandfax[:14].removesuffix('Fa')
                     adrslns = length = len(adrs)
                     faxnum = fax[faxlns - 15:]
-                    listdatalist[tot][8] = faxnum
+                    listdatalist[tot][8] = faxnum.removeprefix('Fax:')
                 tot = tot + 1
             else:
                 tot = tot + 1
