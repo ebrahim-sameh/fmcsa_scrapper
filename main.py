@@ -1,17 +1,12 @@
-import os
+import csv
+
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-import time
-from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import WebDriverException
-import csv
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import WebDriverWait
 
 onepage = 0
 pagestoscrape = 0
@@ -26,7 +21,7 @@ schema = ['USDOT Number', 'Prefix', 'Docket Number', 'Legal Name', 'DBA Name', '
           'Type', 'Insurance Carrier', 'Policy/Surety', 'Posted Date', 'Coverage From', 'Coverage to', 'Effective Date',
           'Cancellation Date'
           ]
-site = 'https://li-public.fmcsa.dot.gov/LIVIEW/pkg_menu.prc_menu'
+site = "https://li-public.fmcsa.dot.gov/LIVIEW/pkg_menu.prc_menu"
 path = 'chromedriver'
 # chrome_options = Options()
 # chrome_options.add_extension('extension_8_2_3_0.crx')
@@ -189,29 +184,33 @@ while (1):
             onepage = 1
             break
 if onepage < 1:
-                tot = 0
-                for lst in listdatalist:
-                    lns = len(listdatalist[tot])
-                    if lns > 9:
-                        adrs = listdatalist[tot][9]
-                        fax = listdatalist[tot][10]
-                        faxlns = len(listdatalist[tot][10])
-                        adrslns = length = len(adrs)
-                        zipcode = adrs[adrslns - 5:]
-                        listdatalist[tot][7] = zipcode
-                        if faxlns > 15:
-                            phoneandfax = listdatalist[tot][10]
-                            adrslns = length = len(adrs)
-                            faxnum = fax[faxlns - 15:]
-                            listdatalist[tot][8] = faxnum
-                        tot = tot + 1
-                    else:
-                        tot = tot + 1
-                with open("Data_output.csv", "w", newline="") as f:
-                    writer = csv.writer(f)
-                    writer.writerow([g for g in schema])
-                    writer.writerows(listdatalist)
-                    onepage = 1
+    tot = 0
+    for lst in listdatalist:
+        lns = len(listdatalist[tot])
+        if lns > 9:
+            adrs = listdatalist[tot][9]
+            adrslns = length = len(adrs)
+            adrsremove = len(listdatalist[tot][5]) + len(listdatalist[tot][6]) + 7
+            f = adrslns - adrsremove
+            listdatalist[tot][9] = adrs[:f]
+            fax = listdatalist[tot][10]
+            faxlns = len(listdatalist[tot][10])
+            zipcode = adrs[adrslns - 5:]
+            listdatalist[tot][7] = zipcode
+            if faxlns > 15:
+                phoneandfax = listdatalist[tot][10]
+                listdatalist[tot][10] = phoneandfax[:14].removesuffix('Fa')
+                adrslns = length = len(adrs)
+                faxnum = fax[faxlns - 15:]
+                listdatalist[tot][8] = faxnum.removeprefix('Fax:')
+            tot = tot + 1
+        else:
+            tot = tot + 1
+    with open("Data_output.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([g for g in schema])
+        writer.writerows(listdatalist)
+        onepage = 1
 # for prospect in prospects:
 #     # print(prospect.text)
 #     print('done')
